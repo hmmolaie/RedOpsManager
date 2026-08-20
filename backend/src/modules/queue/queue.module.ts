@@ -1,12 +1,14 @@
 import { Global, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaModule } from '../../common/prisma/prisma.module';
 import { QUEUE_AGENT_CHECK, QUEUE_REPORT, QUEUE_SCAN } from './queue.constants';
 import { ExecutionEngine } from './execution.engine';
 
 @Global()
 @Module({
   imports: [
+    PrismaModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
