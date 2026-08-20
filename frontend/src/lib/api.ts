@@ -1,6 +1,7 @@
 import { useAuth } from './auth-store';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+/** Same-origin by default so UI works via localhost or remote IP without CORS issues. */
+const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 async function refreshTokens() {
   const { refreshToken, setSession, clear } = useAuth.getState();

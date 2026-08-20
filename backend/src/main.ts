@@ -13,7 +13,18 @@ async function bootstrap() {
   app.setGlobalPrefix(prefix);
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.enableCors({
-    origin: (process.env.APP_URL || 'http://localhost:3000').split(','),
+    origin: (origin, callback) => {
+      const allowed = (process.env.APP_URL || 'http://localhost:3000')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      // Non-browser clients (curl, server-side) send no Origin
+      if (!origin || allowed.includes(origin) || allowed.includes('*')) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
     credentials: true,
   });
   app.useGlobalPipes(

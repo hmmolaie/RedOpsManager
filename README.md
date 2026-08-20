@@ -50,9 +50,11 @@ cp .env.example .env
 docker compose up --build
 ```
 
+The web UI calls the API via same-origin `/api/v1` (Next.js proxies to the API container), so login works from `http://localhost:3000` or `http://SERVER_IP:3000` without changing `NEXT_PUBLIC_API_URL`.
+
 | Service | URL |
 |---|---|
-| Web UI | http://localhost:3000 |
+| Web UI | http://localhost:3000 (or http://SERVER_IP:3000) |
 | API | http://localhost:4000/api/v1 |
 | Swagger | http://localhost:4000/docs |
 | Postgres | localhost:5432 |
