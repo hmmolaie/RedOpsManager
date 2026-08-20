@@ -104,7 +104,10 @@ export class AgentsService {
 
   async remove(actor: AuthUser, id: string) {
     this.assertAdmin(actor);
-    const existing = await this.get(actor, id);
+    const existing = await this.prisma.executionArm.findFirst({
+      where: { id, deletedAt: null, ...orgScope(actor) },
+    });
+    if (!existing) throw new NotFoundException('Execution arm not found');
     await this.prisma.executionArm.update({ where: { id }, data: { deletedAt: new Date() } });
     await this.audit.log({
       actorId: actor.id,
