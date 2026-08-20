@@ -1,0 +1,122 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: redops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-redops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-redops_change_me}
+      POSTGRES_DB: ${POSTGRES_DB:-redops}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redops} -d ${POSTGRES_DB:-redops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - redops
+
+  redis:
+    image: redis:7-alpine
+    container_name: redops-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - redops
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: redops-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://redops:redops_change_me@postgres:5432/redops?schema=public}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      API_PORT: 4000
+    ports:
+      - "${API_PORT:-4000}:4000"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["node", "dist/main.js"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+    networks:
+      - redops
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: redops-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://redops:redops_change_me@postgres:5432/redops?schema=public}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      WORKER_MODE: "true"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+    command: ["node", "dist/worker.js"]
+    networks:
+      - redops
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-RedOps Manager}
+    container_name: redops-web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000/api/v1}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - redops
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  redops:
+    driver: bridge
