@@ -50,7 +50,7 @@ services:
       REDIS_PORT: 6379
       API_PORT: 4000
     ports:
-      - "${API_PORT:-4000}:4000"
+      - "0.0.0.0:${API_PORT:-4000}:4000"
     volumes:
       - uploads_data:/app/uploads
     depends_on:
@@ -106,8 +106,10 @@ services:
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
       API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
     ports:
-      - "3000:3000"
+      - "0.0.0.0:3000:3000"
     depends_on:
       api:
         condition: service_healthy

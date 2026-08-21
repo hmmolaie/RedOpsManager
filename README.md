@@ -60,6 +60,22 @@ The web UI calls the API via same-origin `/api/v1` (Next.js proxies to the API c
 | Postgres | localhost:5432 |
 | Redis | localhost:6379 |
 
+### Remote access (public IP)
+
+The web container binds `0.0.0.0:3000`. On the Linux host, open the firewall if needed:
+
+```bash
+# ufw
+sudo ufw allow 3000/tcp
+sudo ufw reload
+
+# or firewalld
+sudo firewall-cmd --permanent --add-port=3000/tcp
+sudo firewall-cmd --reload
+```
+
+Then open `http://YOUR_PUBLIC_IP:3000` from another machine. Only port **3000** is required for the UI (API is proxied through Next.js).
+
 ### Demo accounts (from seed)
 
 | Role | Email | Password |

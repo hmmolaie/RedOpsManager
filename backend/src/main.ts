@@ -52,9 +52,10 @@ async function bootstrap() {
   });
 
   const port = Number(process.env.API_PORT || 4000);
-  await app.listen(port);
-  console.log(`RedOps API http://localhost:${port}/${prefix}`);
-  console.log(`Swagger     http://localhost:${port}/docs`);
+  const host = process.env.API_HOST || '0.0.0.0';
+  await app.listen(port, host);
+  console.log(`RedOps API http://${host}:${port}/${prefix}`);
+  console.log(`Swagger     http://${host}:${port}/docs`);
 }
 
 bootstrap();

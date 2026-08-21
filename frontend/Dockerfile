@@ -19,6 +19,8 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+# Docker sets HOSTNAME to the container id; Next would bind only there and remote access fails.
+ENV HOSTNAME=0.0.0.0
 ENV API_INTERNAL_URL=http://api:4000
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next/standalone ./
