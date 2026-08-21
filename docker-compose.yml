@@ -49,6 +49,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       API_PORT: 4000
+      API_HOST: "0.0.0.0"
     ports:
       - "0.0.0.0:${API_PORT:-4000}:4000"
     volumes:
@@ -98,14 +99,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
         NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-RedOps Manager}
-        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
     container_name: redops-web
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/v1}
-      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+      API_INTERNAL_URL: http://api:4000
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
     ports:

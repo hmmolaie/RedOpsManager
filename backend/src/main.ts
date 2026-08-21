@@ -13,18 +13,9 @@ async function bootstrap() {
   app.setGlobalPrefix(prefix);
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowed = (process.env.APP_URL || 'http://localhost:3000')
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      // Non-browser clients (curl, server-side) send no Origin
-      if (!origin || allowed.includes(origin) || allowed.includes('*')) {
-        callback(null, true);
-        return;
-      }
-      callback(null, false);
-    },
+    // Reflect request Origin so UI works via localhost or public IP:3000
+    // (and direct Swagger/API access from any browser origin).
+    origin: true,
     credentials: true,
   });
   app.useGlobalPipes(

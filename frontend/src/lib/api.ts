@@ -1,7 +1,10 @@
 import { useAuth } from './auth-store';
 
-/** Same-origin by default so UI works via localhost or remote IP without CORS issues. */
-const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+/**
+ * Always same-origin. Next.js route handler proxies /api/v1/* to the Nest API.
+ * Do not point this at localhost:4000 — that breaks remote browser access.
+ */
+const API = '/api/v1';
 
 async function refreshTokens() {
   const { refreshToken, setSession, clear } = useAuth.getState();
